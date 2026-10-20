@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { loadPluginApp, mountPluginContentScripts } from "@get-bb/plugin-sdk/testing/app";
-import { onSendRequested } from "./bus";
+import { onSendRequested, preferences } from "./bus";
 
 let events: string[] = [];
 let dispose: () => Promise<void>;
@@ -36,10 +36,11 @@ function composer(name = "composer"): HTMLElement {
 }
 
 function key(type: "keydown" | "keyup", code: string, at: number) {
+  const modifier = /^(Meta|Control|Alt|Shift)(Left|Right)$/.exec(code);
   const event = new KeyboardEvent(type, {
     code,
-    key: code.startsWith("Meta") ? "Meta" : code,
-    location: code === "MetaRight" ? 2 : code === "MetaLeft" ? 1 : 0,
+    key: modifier ? modifier[1] : code,
+    location: modifier ? (modifier[2] === "Right" ? 2 : 1) : 0,
     bubbles: true,
   });
   Object.defineProperty(event, "timeStamp", { value: at });
@@ -57,6 +58,7 @@ function holdDown(down: number) {
 
 beforeEach(async () => {
   vi.useFakeTimers();
+  preferences.voiceKey = "MetaRight";
   events = [];
   document.body.innerHTML = "";
   // jsdom has no layout; treat every element as visible.
@@ -177,4 +179,28 @@ test("stops listening after dispose", async () => {
   tap("MetaRight", 1200);
   holdDown(3000);
   expect(events).toEqual([]);
+});
+
+test("a configured key replaces right command", () => {
+  preferences.voiceKey = "ControlRight";
+  composer();
+  tap("MetaRight", 1000);
+  tap("MetaRight", 1200);
+  tap("ControlLeft", 2000);
+  tap("ControlLeft", 2200);
+  expect(events).toEqual([]);
+  tap("ControlRight", 3000);
+  tap("ControlRight", 3200); // start a draft recording
+  tap("ControlRight", 4000);
+  tap("ControlRight", 4200); // stop it
+  key("keydown", "ControlRight", 6000);
+  vi.advanceTimersByTime(400);
+  key("keyup", "ControlRight", 8000); // push-to-talk
+  expect(events).toEqual([
+    "composer:Start voice input",
+    "composer:Stop and add to draft",
+    "composer:Start voice input",
+    "send-requested",
+    "composer:Stop and add to draft",
+  ]);
 });

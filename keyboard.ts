@@ -1,4 +1,5 @@
-// Right-⌘ gestures, installed as a content script:
+// Voice key gestures (right ⌘ on Mac, right Ctrl elsewhere by default),
+// installed as a content script:
 // - double-tap: toggle voice input into the draft (no send)
 // - hold: push-to-talk; release sends after the composer's countdown
 //
@@ -6,8 +7,9 @@
 // voice buttons. It depends on their aria-labels; update the selectors below
 // if a BB release renames them.
 import type { PluginContentScriptContext } from "@get-bb/plugin-sdk/app";
-import { requestSend } from "./bus";
+import { preferences, requestSend } from "./bus";
 import { disposeCues, playCue } from "./cues";
+import { matchesVoiceKey, resolveVoiceKey } from "./keys";
 
 /** Max gap between the two taps of a double-tap. */
 export const DOUBLE_TAP_MS = 350;
@@ -23,11 +25,8 @@ const START_BUTTON = 'button[aria-label="Start voice input"]:not([disabled])';
 const STOP_BUTTON = 'button[aria-label="Stop and add to draft"]:not([disabled])';
 const CANCEL_BUTTON = 'button[aria-label="Cancel recording"]:not([disabled])';
 
-function isRightMeta(event: KeyboardEvent): boolean {
-  return (
-    event.code === "MetaRight" ||
-    (event.key === "Meta" && event.location === KeyboardEvent.DOM_KEY_LOCATION_RIGHT)
-  );
+function isVoiceKey(event: KeyboardEvent): boolean {
+  return matchesVoiceKey(event, resolveVoiceKey(preferences.voiceKey));
 }
 
 function isVisible(element: Element): boolean {
@@ -116,7 +115,7 @@ export function mountKeyboardShortcuts({ signal }: PluginContentScriptContext): 
     stop.click();
   };
 
-  /** Anything other than a lone right-⌘ press cancels every gesture in progress. */
+  /** Anything other than a lone voice-key press cancels every gesture in progress. */
   const interrupt = () => {
     pressIsClean = false;
     lastTapAt = 0;
@@ -125,7 +124,7 @@ export function mountKeyboardShortcuts({ signal }: PluginContentScriptContext): 
   };
 
   const onKeyDown = (event: KeyboardEvent) => {
-    if (isRightMeta(event)) {
+    if (isVoiceKey(event)) {
       if (event.repeat) return;
       pressStartedAt = event.timeStamp;
       pressIsClean = true;
@@ -139,7 +138,7 @@ export function mountKeyboardShortcuts({ signal }: PluginContentScriptContext): 
   };
 
   const onKeyUp = (event: KeyboardEvent) => {
-    if (!isRightMeta(event)) return;
+    if (!isVoiceKey(event)) return;
     clearHoldTimer();
     if (pushToTalk) {
       pressStartedAt = null;

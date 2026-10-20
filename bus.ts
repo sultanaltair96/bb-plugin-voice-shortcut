@@ -2,6 +2,8 @@
 // banners. Both live in this plugin's single frontend bundle, so module state
 // is shared within one bb window.
 
+import type { VoiceKeySetting } from "./keys";
+
 type Listener = () => void;
 
 const sendListeners = new Set<Listener>();
@@ -19,4 +21,7 @@ export function onSendRequested(listener: Listener): () => void {
 }
 
 /** Mirrors the plugin's settings; updated by mounted composer banners. */
-export const preferences = { sounds: true };
+export const preferences: { sounds: boolean; voiceKey: VoiceKeySetting } = {
+  sounds: true,
+  voiceKey: "auto",
+};

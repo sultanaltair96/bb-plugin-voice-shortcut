@@ -1,6 +1,6 @@
 {
   "name": "bb-plugin-voice-shortcut",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -13,7 +13,7 @@
   },
   "bb": {
     "name": "Voice Shortcut",
-    "description": "Right Command key voice input: hold to talk and send, or double-tap to dictate a draft.",
+    "description": "Push-to-talk for bb: hold a key to talk and send, or double-tap it to dictate a draft. macOS, Windows and Linux.",
     "branding": {
       "icon": "Mic"
     },

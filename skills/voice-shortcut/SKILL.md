@@ -1,15 +1,19 @@
 ---
 name: voice-shortcut
-description: Explain or troubleshoot the Voice Shortcut plugin, which drives BB voice input from the right Command key (hold to talk and send, double-tap to dictate a draft).
+description: Explain or troubleshoot the Voice Shortcut plugin, which drives BB voice input from one voice key (right Command on Mac, right Ctrl on Windows and Linux by default): hold to talk and send, double-tap to dictate a draft.
 ---
 
 # Voice Shortcut
 
-Two gestures on the **right Command (⌘) key**. The left ⌘ is ignored.
+Two gestures on one **voice key**. Default: right **⌘ Command** on macOS,
+right **Ctrl** on Windows and Linux (the Windows and Super keys are reserved by
+those systems). The setting **Voice key** (`voiceKey`: `auto`, `MetaRight`,
+`ControlRight`, `AltRight`, `ShiftRight`) picks another key; the left-hand key
+of the same kind is ignored.
 
 ## Hold to talk (sends)
 
-1. Hold right ⌘ for 0.4 s: recording starts (soft click).
+1. Hold the voice key for 0.4 s: recording starts (soft click).
 2. Release: bb transcribes, the text lands in the composer, and a
    "Sending… press Esc to keep as draft" bar appears above it.
 3. After 1 s it submits exactly like Enter: sends, or queues if the agent is
@@ -33,7 +37,8 @@ sending.
   the draft.
 - Key events do not reach the bb window while a terminal or Browser tab
   (webview) has focus, so the gestures do nothing there.
-- Setting: **Play sounds** (default on) in the plugin's settings.
+- Settings: **Voice key** and **Play sounds** (default on) in the plugin's
+  settings, or `bb plugin config voice-shortcut set <key> <value>`.
 - Source: https://github.com/sultanaltair96/bb-plugin-voice-shortcut
   (`keyboard.ts` for the keys, `send-countdown.tsx` for the countdown).
 

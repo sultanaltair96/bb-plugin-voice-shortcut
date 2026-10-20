@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useComposer, useSettings } from "@get-bb/plugin-sdk/app";
 import { onSendRequested, preferences } from "./bus";
 import { playCue } from "./cues";
+import { parseVoiceKeySetting } from "./keys";
 
 /** Time to press Escape after the transcript lands. */
 export const SEND_DELAY_MS = 1000;
@@ -25,10 +26,11 @@ const IDLE: Phase = { kind: "idle" };
 
 export function VoiceSendBanner() {
   const composer = useComposer();
-  const sounds = useSettings().values?.sounds;
+  const { sounds, voiceKey } = useSettings().values ?? {};
   useEffect(() => {
     preferences.sounds = sounds !== false;
-  }, [sounds]);
+    preferences.voiceKey = parseVoiceKeySetting(voiceKey);
+  }, [sounds, voiceKey]);
   return (
     <SendCountdown voiceActive={composer.submittingBlockedReason === VOICE_INPUT_BLOCKED_REASON} />
   );
